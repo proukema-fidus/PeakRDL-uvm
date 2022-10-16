@@ -100,10 +100,16 @@ class UVMExporter:
 
             If False (Default), UVM factory is disabled. Classes are created
             directly via new() constructors.
+        assume_regblock_paths: bool
+            If True, when no hdl_path/hdl_path_slice property is present on a node, assume a
+            peakrdl-regblock compatible default.
+
+            If False (Default), no hdl_path is assumed.
         """
         export_as_package = kwargs.pop("export_as_package", True)
         use_uvm_factory = kwargs.pop("use_uvm_factory", False)
         self.reuse_class_definitions = kwargs.pop("reuse_class_definitions", True)
+        assume_regblock_paths = kwargs.pop("assume_regblock_paths", False)
 
         # Check for stray kwargs
         if kwargs:
@@ -144,6 +150,7 @@ class UVMExporter:
             'roundup_to': self._roundup_to,
             'roundup_pow2': self._roundup_pow2,
             'use_uvm_factory': use_uvm_factory,
+            'assume_regblock_paths': assume_regblock_paths,
         }
 
         context.update(self.user_template_context)

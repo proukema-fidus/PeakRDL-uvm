@@ -82,7 +82,7 @@ this.{{get_inst_name(node)}}.configure(this);
 {{add_hdl_path_slices(node, get_inst_name(node))|trim}}
 this.{{get_inst_name(node)}}.build();
 this.default_map.add_reg(this.{{get_inst_name(node)}}, {{"'h%x" % node.raw_address_offset}});
-{%- endif %}
+{% endif %}
 {%- endmacro %}
 
 //------------------------------------------------------------------------------
@@ -99,6 +99,13 @@ this.default_map.add_reg(this.{{get_inst_name(node)}}, {{"'h%x" % node.raw_addre
 
 {%- for field in node.fields() %}
 {%- if field.get_property('hdl_path_slice') is none -%}
+{%- if assume_regblock_paths -%}
+{%- if field.implements_storage %}
+{{inst_ref}}.add_hdl_path_slice($sformatf("field_storage.%s{{get_inst_name(node)}}.{{get_inst_name(field)}}.value", _path), {{field.lsb}}, {{field.width}});
+{%- else  %}
+{{inst_ref}}.add_hdl_path_slice($sformatf("hwif_in.%s{{get_inst_name(node)}}.{{get_inst_name(field)}}.next", _path), {{field.lsb}}, {{field.width}});
+{%- endif -%}
+{%- endif -%}
 {%- elif field.get_property('hdl_path_slice')|length == 1 %}
 {{inst_ref}}.add_hdl_path_slice("{{field.get_property('hdl_path_slice')[0]}}", {{field.lsb}}, {{field.width}});
 {%- elif field.get_property('hdl_path_slice')|length == field.width %}
