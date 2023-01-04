@@ -44,16 +44,6 @@ endfunction : new
 //------------------------------------------------------------------------------
 {% macro function_build(node) -%}
 virtual function void build();
-    {%if assume_regblock_paths %}
-    string _path = "";
-    uvm_reg_block parent = get_parent();
-    uvm_reg_block prev_parent = this;
-    while(parent) begin
-        _path = {prev_parent.get_name(),".", _path};
-        prev_parent = parent;
-        parent = parent.get_parent();
-    end
-    {% endif %}
     this.default_map = create_map("reg_map", 0, {{get_bus_width(node)}}, {{get_endianness(node)}});
     {%- for child in node.children() -%}
         {%- if isinstance(child, RegNode) -%}
@@ -81,9 +71,8 @@ foreach(this.{{get_inst_name(node)}}[{{utils.array_iterator_list(node)}}]) begin
     {%- endif %}
     {%- if node.get_property('hdl_path') %}
     this.{{get_inst_name(node)}}{{utils.array_iterator_suffix(node)}}.configure(this, "{{node.get_property('hdl_path')}}");
-    {#{%- elif assume_regblock_paths %}
-    //this.{{get_inst_name(node)}}{{utils.array_iterator_suffix(node)}}.configure(this, $sformatf("{{get_inst_name(node)}}{{utils.array_suffix_format(node)}}", {{utils.array_iterator_list(node)}}));
-    #}
+    {%- elif assume_regblock_paths %}
+    this.{{get_inst_name(node)}}{{utils.array_iterator_suffix(node)}}.configure(this, $sformatf("{{get_inst_name(node)}}{{utils.array_suffix_format(node)}}", {{utils.array_iterator_list(node)}}));
     {%- else %}
     this.{{get_inst_name(node)}}{{utils.array_iterator_suffix(node)}}.configure(this);
     {%- endif %}
@@ -101,9 +90,8 @@ this.{{get_inst_name(node)}} = new("{{get_inst_name(node)}}");
 {%- endif %}
 {%- if node.get_property('hdl_path') %}
 this.{{get_inst_name(node)}}.configure(this, "{{node.get_property('hdl_path')}}");
-{# {%- elif assume_regblock_paths %}
+{%- elif assume_regblock_paths %}
 this.{{get_inst_name(node)}}{{utils.array_iterator_suffix(node)}}.configure(this, "{{get_inst_name(node)}}");
-#}
 {%- else %}
 this.{{get_inst_name(node)}}.configure(this);
 {%- endif %}
